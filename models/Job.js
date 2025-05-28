@@ -1,3 +1,4 @@
+const { required } = require('joi');
 const mongoose = require('mongoose');
 
 const JobSchema = mongoose.Schema(
@@ -23,6 +24,19 @@ const JobSchema = mongoose.Schema(
         user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
+        },
+        jobLocation: {
+            type: String,
+            required: [true, 'Job location is required'],
+            length: [50, 'Job location length cannot exceed 50'],
+        },
+        jobType: {
+            type: String,
+            enum: {
+                values: ['full-time', 'part-time', 'remote', 'internship'],
+                message: 'Invalid value for job type. Choose from (full-time , part-time, remote and internship)',
+            },
+            required: [true, 'Job type is required'],
         },
     },
     { timestamps: true }
