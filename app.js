@@ -1,3 +1,4 @@
+const path = require('path');
 require('dotenv').config();
 require('express-async-errors');
 const express = require('express');
@@ -20,6 +21,9 @@ const xss = require('xss-clean');
 const rateLimit = require('express-rate-limit');
 
 const connectDB = require('./db/connect');
+
+//serve static files (front-end)
+app.use(express.static(path.join(__dirname, './client/build')));
 
 //including the routers
 const authRouter = require('./routes/auth');
