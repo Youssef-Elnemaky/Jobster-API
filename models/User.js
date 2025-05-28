@@ -33,6 +33,18 @@ const UserSchema = mongoose.Schema({
         minLength: [10, 'Password cannot be shorter than 10'],
         select: false,
     },
+    lastName: {
+        type: String,
+        maxLength: [20, 'Last name cannot exceed 20 characters'],
+        default: 'lastName',
+        trim: true,
+    },
+    location: {
+        type: String,
+        maxLength: [20, 'Location cannot exceed 20 characters'],
+        trim: true,
+        default: 'my city',
+    },
 });
 
 UserSchema.pre('save', async function (next) {
