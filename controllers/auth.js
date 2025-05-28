@@ -11,8 +11,13 @@ exports.register = catchAsync(async (req, res, next) => {
 
     res.status(StatusCodes.CREATED).json({
         status: 'success',
-        user: { name: newUser.name },
-        token,
+        user: {
+            email: newUser.email,
+            lastName: newUser.lastName,
+            location: newUser.location,
+            name: newUser.name,
+            token,
+        },
     });
 });
 
@@ -30,5 +35,14 @@ exports.login = catchAsync(async (req, res, next) => {
 
     //generate JWT token and send it back
     const token = await user.createJWT();
-    return res.status(StatusCodes.OK).json({ status: 'success', user: { name: user.name }, token });
+    return res.status(StatusCodes.OK).json({
+        status: 'success',
+        user: {
+            email: user.email,
+            lastName: user.lastName,
+            location: user.location,
+            name: user.name,
+            token,
+        },
+    });
 });
