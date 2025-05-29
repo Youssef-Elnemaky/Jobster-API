@@ -1,10 +1,37 @@
 const { StatusCodes } = require('http-status-codes');
 const catchAsync = require('../utils/catchAsync');
 const Job = require('../models/Job');
+const { type } = require('os');
 
 exports.getAllJobs = catchAsync(async (req, res, next) => {
-    const jobs = await Job.find({ user: req.user.userId });
-    res.status(StatusCodes.OK).json({ status: 'success', length: jobs.length, jobs });
+    // *** FILTERING ***
+
+    const { search, status, jobType, sort, page } = req.query;
+
+    // making a filterQuery object that will be passed as a filtering option to Model.find
+    const filterQuery = {
+        user: req.user.userId,
+    };
+    //Only add the values if they are not all as all == empty in find
+    if (status !== 'all') filterQuery.status = status;
+    if (jobType !== 'all') filterQuery.jobType = jobType;
+
+    //If you want to search for documents where either the position or the company matches a given search term (e.g., "engineer"),
+    //you can use MongoDB's $or operator.
+    if (search) {
+        filterQuery['$or'] = [
+            { position: { $regex: search, $options: 'i' } },
+            { company: { $regex: search, $options: 'i' } },
+        ];
+    }
+
+    // Applying filtering, sorting and pagination
+    const jobs = await Job.find(filterQuery);
+    res.status(StatusCodes.OK).json({
+        status: 'success',
+        jobs,
+        totalJobs: Job.length,
+    });
 });
 
 exports.getJob = catchAsync(async (req, res, next) => {
