@@ -43,13 +43,13 @@ exports.getAllJobs = catchAsync(async (req, res, next) => {
             break;
     }
 
+    // *** PAGINATION ***
+    const limit = 10;
+    const skip = (page - 1) * 10;
+
     // Applying filtering, sorting and pagination
-    const jobs = await Job.find(filterQuery).sort(sortQuery);
-    res.status(StatusCodes.OK).json({
-        status: 'success',
-        jobs,
-        totalJobs: Jobs.length,
-    });
+    const jobs = await Job.find(filterQuery).sort(sortQuery).limit(limit).skip(skip);
+    res.status(StatusCodes.OK).json({ status: 'success', totalJobs: jobs.length, numOfPages: page, jobs });
 });
 
 exports.getJob = catchAsync(async (req, res, next) => {
