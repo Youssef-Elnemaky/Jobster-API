@@ -25,12 +25,30 @@ exports.getAllJobs = catchAsync(async (req, res, next) => {
         ];
     }
 
+    // ***SORTING ***
+
+    let sortQuery = '';
+    switch (sort) {
+        case 'latest':
+            sortQuery = '-updatedAt';
+            break;
+        case 'oldest':
+            sortQuery = 'updatedAt';
+            break;
+        case 'a-z':
+            sortQuery = 'position';
+            break;
+        case 'z-a':
+            sortQuery = '-position';
+            break;
+    }
+
     // Applying filtering, sorting and pagination
-    const jobs = await Job.find(filterQuery);
+    const jobs = await Job.find(filterQuery).sort(sortQuery);
     res.status(StatusCodes.OK).json({
         status: 'success',
         jobs,
-        totalJobs: Job.length,
+        totalJobs: Jobs.length,
     });
 });
 
