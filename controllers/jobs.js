@@ -6,15 +6,15 @@ const { type } = require('os');
 exports.getAllJobs = catchAsync(async (req, res, next) => {
     // *** FILTERING ***
 
-    const { search, status, jobType, sort, page } = req.query;
+    const { search, status, jobType, sort } = req.query;
 
     // making a filterQuery object that will be passed as a filtering option to Model.find
     const filterQuery = {
         user: req.user.userId,
     };
     //Only add the values if they are not all as all == empty in find
-    if (status !== 'all') filterQuery.status = status;
-    if (jobType !== 'all') filterQuery.jobType = jobType;
+    if (status && status !== 'all') filterQuery.status = status;
+    if (jobType && jobType !== 'all') filterQuery.jobType = jobType;
 
     //If you want to search for documents where either the position or the company matches a given search term (e.g., "engineer"),
     //you can use MongoDB's $or operator.
@@ -26,7 +26,6 @@ exports.getAllJobs = catchAsync(async (req, res, next) => {
     }
 
     // ***SORTING ***
-
     let sortQuery = '';
     switch (sort) {
         case 'latest':
@@ -44,12 +43,17 @@ exports.getAllJobs = catchAsync(async (req, res, next) => {
     }
 
     // *** PAGINATION ***
-    const limit = 10;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
     const skip = (page - 1) * 10;
 
     // Applying filtering, sorting and pagination
-    const jobs = await Job.find(filterQuery).sort(sortQuery).limit(limit).skip(skip);
-    res.status(StatusCodes.OK).json({ status: 'success', totalJobs: jobs.length, numOfPages: page, jobs });
+    const jobs = await Job.find(filterQuery).sort(sortQuery).skip(skip).limit(limit);
+
+    const totalJobs = await Job.countDocuments(filterQuery);
+    const numOfPages = Math.ceil(totalJobs / limit);
+
+    res.status(StatusCodes.OK).json({ status: 'success', jobs, totalJobs, numOfPages });
 });
 
 exports.getJob = catchAsync(async (req, res, next) => {
