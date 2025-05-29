@@ -1,7 +1,8 @@
+const mongoose = require('mongoose');
 const { StatusCodes } = require('http-status-codes');
 const catchAsync = require('../utils/catchAsync');
 const Job = require('../models/Job');
-const { type } = require('os');
+const moment = require('moment');
 
 exports.getAllJobs = catchAsync(async (req, res, next) => {
     // *** FILTERING ***
@@ -90,4 +91,52 @@ exports.deleteJob = catchAsync(async (req, res, next) => {
 
     //send the response
     res.status(StatusCodes.NO_CONTENT).json({ status: 'success' });
+});
+
+exports.getStats = catchAsync(async (req, res, next) => {
+    let stats = await Job.aggregate([
+        {
+            $match: { user: new mongoose.Types.ObjectId(req.user.userId) },
+        },
+        {
+            $group: {
+                _id: '$status',
+                count: { $sum: 1 },
+            },
+        },
+    ]);
+
+    let defaultStats = { pending: 0, interview: 0, declined: 0 };
+    stats.forEach((item) => {
+        defaultStats[item._id] = item.count;
+    });
+
+    let monthlyApplications = await Job.aggregate([
+        { $match: { user: new mongoose.Types.ObjectId(req.user.userId) } },
+        {
+            $group: {
+                _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+                count: { $sum: 1 },
+            },
+        },
+        { $sort: { '_id.year': -1, '_id.month': -1 } },
+        // { $limit: 6 },
+    ]);
+
+    monthlyApplications = monthlyApplications
+        .map((item) => {
+            const {
+                _id: { year, month },
+                count,
+            } = item;
+            const date = moment()
+                .month(month - 1)
+                .year(year)
+                .format('MMM Y');
+            return { date, count };
+        })
+        .reverse();
+
+    //send response
+    res.status(StatusCodes.OK).json({ status: 'success', defaultStats, monthlyApplications });
 });
