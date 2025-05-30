@@ -4,10 +4,10 @@ info:
   version: 1.0.0
   description: Job tracking API with JWT authentication
 servers:
+  - url: https://jobster-henna.vercel.app/api/v1
+    description: Production server
   - url: http://localhost:5000/api/v1
     description: Development server
-  - url: https://jobster-production.up.railway.app/api/v1
-    description: Production server
 
 components:
   securitySchemes:
