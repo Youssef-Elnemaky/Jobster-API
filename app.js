@@ -3,16 +3,18 @@ require('dotenv').config();
 require('express-async-errors');
 const express = require('express');
 
-const frontEndDomain = 'https://jobio-seven.vercel.app';
-const backendDomain = 'https://jobio-production.up.railway.app';
+const frontEndDomain = 'https://jobster-henna.vercel.app/';
+const backendDomain = 'https://jobster-henna.vercel.app/';
 
 //swagger
 const { swaggerUi, swaggerDocument } = require('./swagger');
 
 const app = express();
 
-// Swagger route
+// Serve Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// Serve static files from swagger-ui-dist
+app.use('/api-docs', express.static(path.join(__dirname, 'node_modules', 'swagger-ui-dist')));
 
 //security packages
 const cors = require('cors');
@@ -70,7 +72,7 @@ app.use(express.json()); //To allow req.body in the request
 
 // routes
 app.get('/api/v1', (req, res) => {
-    res.send(`jobs api\n<h1><a href=${backendDomain}/api-docs>Documentation</h1>`);
+    res.send(`<h1>jobster api</h1> <h1><a href=${backendDomain}/api-docs>Documentation</h1>`);
 });
 
 app.use('/api/v1/auth', loginLimiter, authRouter);
