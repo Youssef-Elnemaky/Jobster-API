@@ -2,13 +2,13 @@ openapi: 3.0.0
 info:
   title: Jobster API
   version: 1.0.2
-  description: Job tracking API with JWT authentication. Test user has read-only access to jobs.
+  description: Job tracking API with JWT authentication. Test user has read-only access
+    to jobs.
 servers:
-  - url: https://jobster-henna.vercel.app/api/v1
-    description: Production server
-  - url: http://localhost:5000/api/v1
-    description: Development server
-
+- url: https://jobster-henna.vercel.app/api/v1
+  description: Production server
+- url: http://localhost:5000/api/v1
+  description: Development server
 components:
   securitySchemes:
     bearerAuth:
@@ -25,7 +25,10 @@ components:
           type: string
         status:
           type: string
-          enum: [pending, interview, declined]
+          enum:
+          - pending
+          - interview
+          - declined
     UpdateUser:
       type: object
       properties:
@@ -37,8 +40,8 @@ components:
     AuthRequest:
       type: object
       required:
-        - email
-        - password
+      - email
+      - password
       properties:
         email:
           type: string
@@ -46,137 +49,268 @@ components:
         password:
           type: string
           format: password
-
 security:
-  - bearerAuth: []
-
+- bearerAuth: []
 paths:
   /auth/register:
     post:
       summary: Register a new user
-      tags: [Auth]
+      tags:
+      - Auth
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/AuthRequest'
+              required:
+              - email
+              - password
       responses:
-        "201":
+        '201':
           description: User registered
-
+        '400': &id001
+          description: 'Bad Request: Invalid or missing input'
+        '500': &id002
+          description: Internal Server Error
   /auth/login:
     post:
       summary: Login a user
-      tags: [Auth]
+      tags:
+      - Auth
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/AuthRequest'
+              required:
+              - email
+              - password
       responses:
-        "200":
+        '200':
           description: Login successful
-
+        '400': *id001
+        '500': *id002
   /auth/updateUser:
     patch:
       summary: Update the current user's profile (Not allowed for test user)
       security:
-        - bearerAuth: []
-      tags: [Auth]
+      - bearerAuth: []
+      tags:
+      - Auth
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateUser'
+              required:
+              - email
+              - name
       responses:
-        "200":
+        '200':
           description: User updated
-        "403":
+        '403':
           description: Forbidden for test user
-
+        '400': *id001
+        '401': &id003
+          description: "Unauthorized \u2013 JWT token is missing or invalid"
+        '404':
+          description: "Not Found \u2013 Resource does not exist"
+        '500': *id002
   /jobs:
     get:
-      summary: Get all jobs
+      summary: Get all jobs with filtering, sorting, and pagination
       security:
-        - bearerAuth: []
-      tags: [Jobs]
+      - bearerAuth: []
+      tags:
+      - Jobs
+      parameters:
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - interview
+          - declined
+          - pending
+        description: Filter by job status
+      - in: query
+        name: jobType
+        schema:
+          type: string
+          enum:
+          - full-time
+          - part-time
+          - remote
+          - internship
+        description: Filter by job type
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search by position or company
+      - in: query
+        name: sort
+        schema:
+          type: string
+          enum:
+          - latest
+          - oldest
+          - a-z
+          - z-a
+          default: latest
+        description: 'Sort order: latest, oldest, a-z, z-a'
+      - in: query
+        name: page
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+        description: Page number for pagination
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+        description: Number of items per page
       responses:
-        "200":
+        '200':
           description: A list of jobs
+        '401':
+          description: Unauthorized
+        '500': *id002
     post:
       summary: Create a new job (Not allowed for test user)
       security:
-        - bearerAuth: []
-      tags: [Jobs]
+      - bearerAuth: []
+      tags:
+      - Jobs
       responses:
-        "201":
+        '201':
           description: Job created
-        "403":
+        '403':
           description: Forbidden for test user
-
+        '400': *id001
+        '401': *id003
+        '500': *id002
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                company:
+                  type: string
+                position:
+                  type: string
+                status:
+                  type: string
+                  enum:
+                  - pending
+                  - interview
+                  - declined
+                jobLocation:
+                  type: string
+                  maxLength: 50
+                jobType:
+                  type: string
+                  enum:
+                  - full-time
+                  - part-time
+                  - remote
+                  - internship
+              required:
+              - company
+              - position
+              - status
+              - jobLocation
+              - jobType
+            example:
+              company: OpenAI
+              position: Backend Engineer
+              status: interview
+              jobLocation: San Francisco
+              jobType: full-time
   /jobs/stats:
     get:
       summary: Get job statistics
       security:
-        - bearerAuth: []
-      tags: [Jobs]
+      - bearerAuth: []
+      tags:
+      - Jobs
       responses:
-        "200":
+        '200':
           description: Job statistics
-
+        '401': *id003
+        '500': *id002
   /jobs/{id}:
     get:
       summary: Get a single job
       security:
-        - bearerAuth: []
-      tags: [Jobs]
+      - bearerAuth: []
+      tags:
+      - Jobs
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
-        "200":
+        '200':
           description: Job found
-        "404":
+        '404':
           description: Job not found
+        '400': *id001
+        '401': *id003
+        '500': *id002
     patch:
       summary: Update a job (Not allowed for test user)
       security:
-        - bearerAuth: []
-      tags: [Jobs]
+      - bearerAuth: []
+      tags:
+      - Jobs
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
-        "200":
+        '200':
           description: Job updated
-        "403":
+        '403':
           description: Forbidden for test user
-        "404":
+        '404':
           description: Job not found
+        '400': *id001
+        '401': *id003
+        '500': *id002
     delete:
       summary: Delete a job (Not allowed for test user)
       security:
-        - bearerAuth: []
-      tags: [Jobs]
+      - bearerAuth: []
+      tags:
+      - Jobs
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
-        "204":
+        '204':
           description: Job deleted
-        "403":
+        '403':
           description: Forbidden for test user
-        "404":
+        '404':
           description: Job not found
+        '401':
+          description: Job not found
+        '400': *id001
+        '500': *id002
