@@ -29,17 +29,19 @@ exports.getAllJobs = catchAsync(async (req, res, next) => {
     // ***SORTING ***
     let sortQuery = '';
     switch (sort) {
-        case 'latest':
-            sortQuery = '-updatedAt';
-            break;
-        case 'oldest':
-            sortQuery = 'updatedAt';
-            break;
         case 'a-z':
             sortQuery = 'position';
             break;
         case 'z-a':
             sortQuery = '-position';
+            break;
+        case 'oldest':
+            sortQuery = 'updatedAt';
+            break;
+
+        case 'latest':
+        default:
+            sortQuery = '-updatedAt';
             break;
     }
 
