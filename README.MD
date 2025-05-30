@@ -68,14 +68,24 @@ npm start
 
 ### Job Routes (JWT Required)
 
-| Method | Route       | Description                                 |
-|--------|-------------|---------------------------------------------|
-| GET    | /jobs       | Get all jobs                                |
-| POST   | /jobs       | Create a new job (❌ test user is not allowed) |
-| GET    | /jobs/:id   | Get a single job                            |
-| PATCH  | /jobs/:id   | Update a job (❌ test user is not allowed)   |
-| DELETE | /jobs/:id   | Delete a job (❌ test user is not allowed)   |
-| GET    | /jobs/stats | Get jobs statistics                          |
+| Method | Route       | Description                                                          |
+|--------|-------------|----------------------------------------------------------------------|
+| GET    | /jobs       | Get all jobs (supports filtering, sorting, search, and pagination)   |
+| POST   | /jobs       | Create a new job (❌ test user is not allowed)                        |
+| GET    | /jobs/:id   | Get a single job                                                     |
+| PATCH  | /jobs/:id   | Update a job (❌ test user is not allowed)                            |
+| DELETE | /jobs/:id   | Delete a job (❌ test user is not allowed)                            |
+| GET    | /jobs/stats | Get job statistics                                                   |
+
+
+### 🔍 Query Parameters for `/jobs`
+
+- `status` – Filter by job status (`pending`, `interview`, `declined`)
+- `jobType` – Filter by job type (`full-time`, `part-time`, `remote`, `internship`)
+- `search` – Text search by company or position
+- `sort` – Sort results (`latest`, `oldest`, `a-z`, `z-a`)
+- `page` – Page number for pagination
+- `limit` – Number of jobs per page
 
 ## 📄 API Documentation
 
