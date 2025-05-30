@@ -38,7 +38,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
         customError.statusCode = StatusCodes.UNAUTHORIZED;
     }
 
-    return res.status(customError.statusCode).json({ error: customError.message });
+    return res.status(customError.statusCode).json({ msg: customError.message });
 };
 
 module.exports = errorHandlerMiddleware;
